@@ -2,7 +2,9 @@ package opson
 
 object Main {
     def main(args: Array[String]): Unit = {
-        println("yo!")
+        val home = new pages.Home()
+        home.visible = true
+        println("main window is visible")
     }
 }
 
