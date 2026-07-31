@@ -1,0 +1,8 @@
+package opson
+
+object Main {
+    def main(args: Array[String]): Unit = {
+        println("yo!")
+    }
+}
+
