@@ -6,6 +6,7 @@ file categorizer
 
 # Plan
 1. Complete GUI:
+   1. UI Layout mechanism
    1. Config page:
       1. Add base folder
       1. Choose AI provider
