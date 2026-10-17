@@ -10,10 +10,10 @@ class Home extends MainFrame { frame =>
 
   try {
     val iconUrl = Option(getClass.getResource("/opson_icon.png")).foreach(url => ImageIO.read(url))
-  } catch
-    java.io.IOException {
+  } catch {
+    case e: java.io.IOException =>
       println("Error loading icon: " + e.getMessage)
-    }
+  }
 
   val mainContentBox = new BoxPanel(Orientation.Vertical) {
     contents += pages.settingsPage

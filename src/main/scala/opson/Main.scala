@@ -7,4 +7,3 @@ object Main {
         println("main window is visible")
     }
 }
-

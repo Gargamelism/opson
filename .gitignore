@@ -9,3 +9,5 @@ project/project/*
 target/*
 build.sbt.semanticdb
 .metals/*
+user-settings.json
+.vscode/*
