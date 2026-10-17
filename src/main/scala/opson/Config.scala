@@ -1,56 +1,53 @@
 package opson
 
-import com.typesafe.config.{ConfigFactory, ConfigValueFactory, Config}
+import com.typesafe.config.{ConfigFactory, ConfigValueFactory, Config as TsConfig}
 import java.nio.file.{Files, Paths}
-import org.json4s._
-import org.json4s.native.JsonMethods._
+import org.json4s.{Formats, NoTypeHints}
+import org.json4s.native.JsonMethods.parse
 import org.json4s.native.Serialization
 import org.json4s.native.Serialization.write
-import scala.compiletime.constValue
 import scala.deriving.Mirror
-implicit val formats: Formats = Serialization.formats(NoTypeHints)
+import org.json4s.{DefaultFormats, jvalue2extractable}
 
 case class UserSettings(baseDir: String)
 
 object Config {
-  val USER_SETTINGS_FILE: String = constValue["user-settings.json"]
-  private val config: Config = {
+  given formats: Formats = DefaultFormats.withHints(NoTypeHints)
+  final val UserSettingsFile = "user-settings.json"
+  private val config: TsConfig = {
     val defaultConfig = ConfigFactory.load()
-    val userSettings = Files.exists(Paths.get(USER_SETTINGS_FILE)) match {
-      case true  => loadUserSettings()
-      case false => createUserSettings(defaultConfig)
-    }
+    val userSettings = if Files.exists(Paths.get(UserSettingsFile)) then 
+      loadUserSettings()
+    else 
+      createUserSettings(defaultConfig)
 
-    val config = userSettings.productElementNames.toList
-      .foldLeft(defaultConfig) { (acc, field) =>
-        acc.withValue(s"opson.$field", ConfigValueFactory.fromAnyRef(userSettings.productElement(0).toString))
+    userSettings.productElementNames.zip(userSettings.productIterator)
+      .foldLeft(defaultConfig) { case (acc, (field, value)) =>
+        acc.withValue(s"opson.$field", ConfigValueFactory.fromAnyRef(value))
       }
-
-    config
   }
 
   def setBaseDir(newBaseDir: String): Unit = {
     println(s"Base directory updated to: $newBaseDir")
-    val suggestedBaseDir = newBaseDir.trim
-    if (Files.exists(Paths.get(suggestedBaseDir)) && Files.isDirectory(Paths.get(suggestedBaseDir))) {
-      config.withValue("opson.baseDir", ConfigValueFactory.fromAnyRef(suggestedBaseDir))
-      ConfigFactory.invalidateCaches()
-      setUserSettings("baseDir", suggestedBaseDir)
+    val suggestedBaseDir = Paths.get(newBaseDir.trim)
+    if (!Files.exists(suggestedBaseDir) || !Files.isDirectory(suggestedBaseDir)) {
+      throw new IllegalArgumentException(s"Invalid base directory: $newBaseDir")
     }
+    ConfigFactory.invalidateCaches()
+    setUserSettings("baseDir", suggestedBaseDir.toString)
   }
 
   def getBaseDir: String = {
     val homeDir = System.getProperty("user.home")
-    val baseDir = Option(config.getString("opson.baseDir")).getOrElse(homeDir)
-    baseDir
+    Option(config.getString("opson.baseDir")).getOrElse(homeDir)
   }
 
   private def loadUserSettings(): UserSettings = {
-    val jsonString = new String(Files.readAllBytes(Paths.get(USER_SETTINGS_FILE)))
+    val jsonString = new String(Files.readString(Paths.get(UserSettingsFile)))
     parse(jsonString).extract[UserSettings]
   }
 
-  private def createUserSettings(defaultConfig: Config): UserSettings = {
+  private def createUserSettings(defaultConfig: TsConfig): UserSettings = {
     val userSettings = UserSettings(baseDir = System.getProperty("user.home"))
     saveUserSettings(userSettings)
     userSettings
@@ -59,7 +56,7 @@ object Config {
   private def setUserSettings(field: String, value: Any): Unit = {
     val userSettings = loadUserSettings()
     val updatedSettings = userSettings.productElementNames.zip(userSettings.productIterator).map {
-      case (fieldName, _) if (fieldName == field) => value
+      case (fieldName, _) if fieldName == field => value
       case (_, fieldValue)                        => fieldValue
     }
     val updatedUserSettings =
@@ -69,6 +66,6 @@ object Config {
 
   private def saveUserSettings(userSettings: UserSettings): Unit = {
     val jsonString = write(userSettings)
-    Files.write(Paths.get(USER_SETTINGS_FILE), jsonString.getBytes)
+    Files.writeString(Paths.get(UserSettingsFile), jsonString)
   }
 }

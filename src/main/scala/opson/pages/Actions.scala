@@ -4,21 +4,19 @@ import scala.swing._
 
 object Actions {
   def switchWindow(
-      targetWindow: PagesEnum,
+      targetWindow: Page,
       box: BoxPanel,
       frame: MainFrame,
       pages: MainPages
   ): Unit = {
     println(s"Switching to $targetWindow window...")
-    val length = box.contents.length
-    println(s"Current contents length: $length")
     box.contents.remove(box.contents.length - 1)
 
     targetWindow match {
-      case PagesEnum.Settings =>
+      case Page.Settings =>
         println("Settings Page selected")
         box.contents += pages.settingsPage
-      case PagesEnum.Main =>
+      case Page.Main =>
         println("Main Page selected")
         box.contents += pages.mainPage
     }

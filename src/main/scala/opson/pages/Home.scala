@@ -3,13 +3,15 @@ package opson.pages
 import scala.swing._
 import javax.imageio.ImageIO
 
+case class MainPages(mainPage: MainPage, settingsPage: SettingsPage)
+
 class Home extends MainFrame { frame =>
   title = "Opson"
   preferredSize = new Dimension(800, 600)
   val pages = MainPages(new MainPage(), new SettingsPage())
 
   try {
-    val iconUrl = Option(getClass.getResource("/opson_icon.png")).foreach(url => ImageIO.read(url))
+    val iconUrl = Option(getClass.getResource("/opson_icon.png")).foreach(url => iconImage = ImageIO.read(url))
   } catch {
     case e: java.io.IOException =>
       println("Error loading icon: " + e.getMessage)
@@ -27,7 +29,7 @@ class Home extends MainFrame { frame =>
     contents += new Menu("Window") {
       contents += new MenuItem(Action("Main") {
         Actions.switchWindow(
-          PagesEnum.Main,
+          Page.Main,
           mainContentBox,
           frame,
           pages
@@ -36,17 +38,16 @@ class Home extends MainFrame { frame =>
 
       contents += new MenuItem(Action("Settings") {
         Actions.switchWindow(
-          PagesEnum.Settings,
+          Page.Settings,
           mainContentBox,
           frame,
           pages
         )
       })
     }
-
-    pack()
-    visible = true
   }
 
+  pack()
+  visible = true
   contents = mainContentBox
 }

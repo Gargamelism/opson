@@ -1,18 +1,15 @@
 package opson.pages
 
 import scala.swing._
-import Swing._
 import opson.components.Header
 import opson.Config
 import java.io.File
 import scala.swing.event.ButtonClicked
 
-
 class SettingsPage extends BoxPanel(Orientation.Vertical) { settingsPage =>
   contents += new Header("Settings")
 
   val baseDirButton = new Button("Select Base Directory")
-  listenTo(baseDirButton)
   val baseDirTextField = new TextField { editable = true; text = Config.getBaseDir }
   val baseDirBox = new BoxPanel(Orientation.Horizontal) {
     contents += new Label("Base Directory: ")
@@ -22,12 +19,10 @@ class SettingsPage extends BoxPanel(Orientation.Vertical) { settingsPage =>
   contents += baseDirBox
 
   val saveButton = new Button("Save Settings")
-  listenTo(saveButton)
   contents += saveButton
-  contents += new BorderPanel {
-    add(saveButton, BorderPanel.Position.East)
-  }
+  contents += new BorderPanel 
 
+  listenTo(baseDirButton, saveButton)
   reactions += {
     case ButtonClicked(`baseDirButton`) =>
       val chooser = new FileChooser(new File("."))

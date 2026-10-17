@@ -1,7 +1,5 @@
 package opson.pages
 
-enum PagesEnum {
+enum Page {
   case Main, Settings
 }
-
-case class MainPages(mainPage: MainPage, settingsPage: SettingsPage)
